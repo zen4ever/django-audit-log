@@ -61,7 +61,7 @@ class AuditLog(object):
         for field in instance._meta.fields:
             if field.attname not in self._exclude:
                 attrs[field.attname] = getattr(instance, field.attname)
-        manager.create(action_type = action_type, **attrs)
+        manager.create(audit_action_type = action_type, **attrs)
     
     def post_save(self, instance, created, **kwargs):
         self.create_log_entry(instance, created and 'I' or 'U')
@@ -137,23 +137,23 @@ class AuditLog(object):
             try:
                 result = u'%s: %s %s at %s'%(model._meta.object_name, 
                                                 log_entry.object_state, 
-                                                log_entry.get_action_type_display().lower(),
-                                                log_entry.action_date,
+                                                log_entry.get_audit_action_type_display().lower(),
+                                                log_entry.audit_action_date,
                                                 
                                                 )
             except AttributeError:
                 result = u'%s %s at %s'%(model._meta.object_name,
-                                                log_entry.get_action_type_display().lower(),
-                                                log_entry.action_date
+                                                log_entry.get_audit_action_type_display().lower(),
+                                                log_entry.audit_action_date
                                                 
                                                 )
             return result
         
         return {
-            'action_id' : models.AutoField(primary_key = True),
-            'action_date' : models.DateTimeField(default = datetime.datetime.now),
-            'action_user' : LastUserField(related_name = rel_name),
-            'action_type' : models.CharField(max_length = 1, choices = (
+            'audit_action_id' : models.AutoField(primary_key = True),
+            'audit_action_date' : models.DateTimeField(default = datetime.datetime.now),
+            'audit_action_user' : LastUserField(related_name = rel_name),
+            'audit_action_type' : models.CharField(max_length = 1, choices = (
                 ('I', _('Created')),
                 ('U', _('Changed')),
                 ('D', _('Deleted')),
@@ -169,7 +169,7 @@ class AuditLog(object):
         the Meta inner class of the log entry model.
         """
         return {
-            'ordering' : ('-action_date',),
+            'ordering' : ('-audit_action_date',),
             'app_label' : model._meta.app_label,
         }
     
